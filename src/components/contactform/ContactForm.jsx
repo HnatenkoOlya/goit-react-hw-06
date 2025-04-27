@@ -1,40 +1,43 @@
 import css from './ContactForm.module.css'
-import { useId } from "react";
+import { nanoid } from 'nanoid';
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { useDispatch, useSelector } from "react-redux";
+import {addContact} from "../../redux/contactsSlice";
 
-export default function ContactForm ({onAdd}) {
+export default function ContactForm () {
+    const dispatch = useDispatch();
+    const contacts = useSelector(state => state.contacts.items);
+
     const contactSchema = Yup.object().shape({
         name:Yup.string().min(3, "Too Short!").max(50, "Too Long!").required("Required"),
         number:Yup.string().min(3, "Too Short!").max(80, "Too Long!").required("Required"),
     });
 
-    const nameId = useId ();
-    const numberId = useId ();
-
     const handleSubmit = (values, actions) => {
-        onAdd(values);
+        const isExist = contacts.some(contact => contact.name.toLowerCase() === values.name.toLowerCase());
+        if (isExist) {
+        alert('This contact already exists!');
         actions.resetForm();
+        return; }
+        dispatch(addContact({
+            id: nanoid(),
+            name: values.name,
+            number: values.number,
+          }));
+          actions.resetForm();
+        };
+        return (
+            <Formik initialValues={{name:"", number:""}} onSubmit={handleSubmit} validationSchema={contactSchema}>
+                <Form className={css.form}>
+                 <label className={css.formLabel}>Name</label>   
+                 <Field type="text" name="name" className={css.formField}/>
+                 <ErrorMessage name="name" component="span" className={css.formError}/>
+                 <label className={css.formLabel}>Number</label>
+                 <Field type="tel" name="number" className={css.formField}/>
+                 <ErrorMessage name="number" component="span" className={css.formError}/>
+                <button type="submit" className={css.formBtn}>Add Contact</button>
+                </Form>
+            </Formik>
+        )
     }
-        /*{
-        evt.preventDefault();
-        onAdd({
-            name:evt.target.elements.name.value,
-            number:evt.target.elements.number.value,
-        })
-        evt.targer.reset();
-    }*/
-    return (
-        <Formik initialValues={{name:"", number:""}} onSubmit={handleSubmit} validationSchema={contactSchema}>
-            <Form className={css.form}>
-             <label htmlFor={nameId} className={css.formLabel}>Name</label>   
-             <Field type="text" name="name" id={nameId} className={css.formField}/>
-             <ErrorMessage name="name" component="span" className={css.formError}/>
-             <label htmlFor={numberId} className={css.formLabel}>Number</label>
-			 <Field type="tel" name="number" id={numberId} className={css.formField}/>
-             <ErrorMessage name="number" component="span" className={css.formError}/>
-            <button type="submit" className={css.formBtn}>Add Contact</button>
-            </Form>
-        </Formik>
-    )
-}
