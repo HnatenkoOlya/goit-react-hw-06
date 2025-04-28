@@ -10,6 +10,10 @@ export default function ContactList () {
         contact.name.toLowerCase().includes(filter)
       );
 
+      /*console.log('contacts', contacts);
+      console.log('filter', filter);
+      console.log('visibleContacts', visibleContacts);*/
+
  return (
     <ul className={css.listContact}>
         {visibleContacts.map(contact => (
